@@ -1,0 +1,24 @@
+spring:
+  mvc:
+    aync:
+        request-timeout: 120000
+  datasource:
+    url: jdbc:sqlite:classpath:chinook.db
+    driver-class-name: org.sqlite.JDBC
+  sql:
+    init:
+      mode: never
+
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: llama3:latest
+        options:
+          num-predict: 1024
+
+server:
+  tomcat:
+    connection-timeout: 120s
+
+
