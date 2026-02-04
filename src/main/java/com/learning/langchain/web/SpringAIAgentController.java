@@ -1,6 +1,6 @@
 package com.learning.langchain.web;
 
-import com.learning.langchain.ai.service.SqlAgentService;
+import com.learning.langchain.ai.service.SpringAISqlAgentService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/agent")
-public class AgentController {
+public class SpringAIAgentController {
 
-    private final SqlAgentService agentService;
+    private final SpringAISqlAgentService agentService;
 
-    public AgentController(SqlAgentService agentService) {
+    public SpringAIAgentController(SpringAISqlAgentService agentService) {
         this.agentService = agentService;
     }
 

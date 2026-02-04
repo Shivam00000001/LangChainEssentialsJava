@@ -4,12 +4,12 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SqlAgentService {
+public class SpringAISqlAgentService {
 
     private final ChatClient chatClient;
 
 
-    public SqlAgentService(ChatClient chatClient) {
+    public SpringAISqlAgentService(ChatClient chatClient) {
         this.chatClient = chatClient;
     }
 

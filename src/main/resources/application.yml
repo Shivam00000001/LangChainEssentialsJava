@@ -13,9 +13,16 @@ spring:
     ollama:
       base-url: http://localhost:11434
       chat:
-        model: llama3:latest
+        model: qwen2.5:7b
         options:
           num-predict: 1024
+
+llm:
+  provider: ollama
+  base-url : http://localhost:11434
+  model: llama3:latest
+  temperature: 0.0
+  timeout-seconds: 120
 
 server:
   tomcat:
