@@ -1,6 +1,6 @@
 package com.learning.langchain.ai.tool;
 
-import org.springframework.ai.tool.annotation.Tool;
+import dev.langchain4j.agent.tool.Tool;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -17,21 +17,15 @@ public class SqlTool {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Tool(
-            name = "Sql Executor",
-            description = "Execute a SQL query on the Chinook database"
-    )
+    @Tool("Execute a SQL query on the Chinook database")
     public List<Map<String, Object>> executeSql(String query) {
         return jdbcTemplate.queryForList(query);
     }
 
 
     // NEW — list tables
-    @Tool(
-            name = "list_tables",
-            description = "List all tables in the SQLite database"
-    )
-    public List<String> listTables() {
+     @Tool("Use this to list ALL tables in the SQLite database. Required before answering any schema question.")
+    public List<String> listTables(String input) {
         return jdbcTemplate.queryForList(
                 "SELECT name FROM sqlite_master WHERE type='table'",
                 String.class
@@ -39,10 +33,7 @@ public class SqlTool {
     }
 
     // NEW — describe table
-    @Tool(
-            name = "describe_table",
-            description = "Describe columns of a given table"
-    )
+    @Tool("Describe columns of a given table")
     public List<Map<String, Object>> describeTable(String table) {
         return jdbcTemplate.queryForList(
                 "PRAGMA table_info(" + table + ")"

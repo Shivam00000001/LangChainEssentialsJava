@@ -2,9 +2,11 @@ package com.learning.langchain.ai.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Profile;
 
 @Data
 @ConfigurationProperties(prefix = "llm")
+@Profile("langchain4j")
 public class LlmProperties {
 
     private String provider;

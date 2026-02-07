@@ -1,9 +1,11 @@
 package com.learning.langchain.ai.service;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
+@Profile("spring-ai")
 public class SpringAISqlAgentService {
 
     private final ChatClient chatClient;
