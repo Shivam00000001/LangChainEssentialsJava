@@ -1,4 +1,4 @@
-package com.learning.langchain.ai.config;
+package com.learning.langchain.shared.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

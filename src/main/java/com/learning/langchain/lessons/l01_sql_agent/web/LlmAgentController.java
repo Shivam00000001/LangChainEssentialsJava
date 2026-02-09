@@ -1,7 +1,6 @@
-package com.learning.langchain.web;
+package com.learning.langchain.lessons.l01_sql_agent.web;
 
-import com.learning.langchain.ai.orchestrator.SqlAgentRunner;
-import com.learning.langchain.ai.service.LlmSqlAgentService;
+import com.learning.langchain.lessons.l01_sql_agent.orchestrator.SqlAgentRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

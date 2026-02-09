@@ -1,4 +1,4 @@
-package com.learning.langchain.ai.config;
+package com.learning.langchain.shared.config;
 
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.ollama.OllamaChatModel;

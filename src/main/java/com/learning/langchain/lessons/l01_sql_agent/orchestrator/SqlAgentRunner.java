@@ -1,6 +1,6 @@
-package com.learning.langchain.ai.orchestrator;
+package com.learning.langchain.lessons.l01_sql_agent.orchestrator;
 
-import com.learning.langchain.ai.tool.SqlTool;
+import com.learning.langchain.lessons.l01_sql_agent.tool.SqlTool;
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;

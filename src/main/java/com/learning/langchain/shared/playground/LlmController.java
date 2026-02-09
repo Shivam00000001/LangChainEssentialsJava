@@ -1,6 +1,5 @@
-package com.learning.langchain.web;
+package com.learning.langchain.shared.playground;
 
-import com.learning.langchain.ai.service.LllmService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

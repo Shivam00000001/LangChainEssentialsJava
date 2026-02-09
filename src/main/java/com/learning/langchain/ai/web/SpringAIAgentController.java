@@ -1,4 +1,4 @@
-package com.learning.langchain.web;
+package com.learning.langchain.ai.web;
 
 import com.learning.langchain.ai.service.SpringAISqlAgentService;
 import org.springframework.context.annotation.Profile;

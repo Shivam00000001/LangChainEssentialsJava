@@ -1,4 +1,4 @@
-package com.learning.langchain.ai.service;
+package com.learning.langchain.shared.playground;
 
 import dev.langchain4j.model.chat.ChatModel;
 import org.springframework.context.annotation.Profile;

@@ -8,27 +8,6 @@ spring:
   sql:
     init:
       mode: never
-  profiles:
-    active: langchain4j
-
-  logging:
-    level:
-      dev.langchain4j: DEBUG
-
-  ai:
-    ollama:
-      base-url: http://localhost:11434
-      chat:
-        model: qwen2.5:7b-instruct
-        options:
-          num-predict: 1024
-
-llm:
-  provider: ollama
-  base-url : http://localhost:11434
-  model: qwen2.5:7b-instruct
-  temperature: 0.0
-  timeout-seconds: 120
 
 server:
   tomcat:

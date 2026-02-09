@@ -1,4 +1,4 @@
-package com.learning.langchain.ai.tool;
+package com.learning.langchain.lessons.l01_sql_agent.tool;
 
 import dev.langchain4j.agent.tool.Tool;
 import org.springframework.jdbc.core.JdbcTemplate;

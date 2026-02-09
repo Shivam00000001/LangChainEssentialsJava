@@ -1,8 +1,8 @@
-package com.learning.langchain.ai.service;
+package com.learning.langchain.lessons.l01_sql_agent.service;
 
 
 import com.learning.langchain.ai.agent.SqlAgent;
-import com.learning.langchain.ai.tool.SqlTool;
+import com.learning.langchain.lessons.l01_sql_agent.tool.SqlTool;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.service.AiServices;
 import org.springframework.context.annotation.Profile;
