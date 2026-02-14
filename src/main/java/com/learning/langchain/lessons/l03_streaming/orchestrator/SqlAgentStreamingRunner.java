@@ -7,6 +7,8 @@ import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.data.message.*;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
+import dev.langchain4j.model.chat.request.json.JsonObjectSchema;
+import dev.langchain4j.model.chat.request.json.JsonStringSchema;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -33,14 +35,23 @@ public class SqlAgentStreamingRunner {
                 ToolSpecification.builder()
                         .name("List Tables")
                         .description("List all the tables in the SQLite database")
+                        .parameters(JsonObjectSchema.builder().build())
                         .build(),
                 ToolSpecification.builder()
                         .name("describeTable")
                         .description("Describe columns of the table, Expects 'table'")
+                        .parameters(JsonObjectSchema.builder()
+                                .addProperty("table", JsonStringSchema.builder().build())
+                                .required("table")
+                                .build())
                         .build(),
                 ToolSpecification.builder()
                         .name("executeSql")
                         .description("Execute Select SQL, Expects 'query'")
+                        .parameters(JsonObjectSchema.builder()
+                                .addProperty("query", JsonStringSchema.builder().build())
+                                .required("query")
+                                .build())
                         .build()
         );
     }
@@ -48,6 +59,8 @@ public class SqlAgentStreamingRunner {
     public void stream(String question, SseEmitter emitter) {
 
         List<ChatMessage> messages = new ArrayList<>();
+        boolean toolUsed = false;
+
         messages.add(SystemMessage.from("""
                     You are a SQL agent connected to a real database.
                     
@@ -60,7 +73,7 @@ public class SqlAgentStreamingRunner {
 
         for (int step = 0; step < 8; step++) {
 
-            send(emitter, "step", "LLM step " + step + 1);
+            send(emitter, "step", "LLM step " + (step + 1));
 
             ChatRequest chatRequest = ChatRequest.builder()
                     .messages(messages)
@@ -77,6 +90,11 @@ public class SqlAgentStreamingRunner {
             }
 
             if (ai.text() != null && ai.text().contains("FINAL ANSWER")) {
+
+                if (!toolUsed) {
+                    send(emitter, "error", "Model answered without using tools");
+                }
+
                 send(emitter, "done", "completed");
                 return;
             }
@@ -86,6 +104,8 @@ public class SqlAgentStreamingRunner {
             if (toolCalls != null && !toolCalls.isEmpty()) {
 
                 ToolExecutionRequest toolExecutionRequest = toolCalls.get(0);
+                toolUsed = true;
+
                 send(emitter, "tool-request", toolExecutionRequest.toString());
 
                 Object result = dispatch(toolExecutionRequest);
