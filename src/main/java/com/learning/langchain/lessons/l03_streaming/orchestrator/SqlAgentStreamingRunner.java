@@ -3,6 +3,7 @@ package com.learning.langchain.lessons.l03_streaming.orchestrator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learning.langchain.lessons.l01_sql_agent.tool.SqlTool;
 import com.learning.langchain.shared.memory.ConversationMemoryStore;
+import com.learning.langchain.shared.output.TableStats;
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.data.message.*;
@@ -76,7 +77,15 @@ public class SqlAgentStreamingRunner {
                     RULES:
                     - Use tools when needed
                     - Never guess or simulate
-                    - END with a FINAl ANSWER
+                    - You MUST return the final answer as valid JSON ONLY.
+                      Do not include explanations, markdown, or extra text.
+                
+                      The JSON schema is:
+                
+                      {
+                        "table": string,
+                        "rowCount": number
+                      }
                 """));
         UserMessage userMessage = UserMessage.from(question);
         messages.add(userMessage);
@@ -107,15 +116,28 @@ public class SqlAgentStreamingRunner {
                 send(emitter, "llm", ai.text());
             }
 
-            if (ai.text() != null && ai.text().contains("FINAL ANSWER")) {
-                log.info("[SESSION={}] ✅ FINAL ANSWER reached", sessionId);
+            if (ai.text() != null) {
+                try {
+                    // Attempt to parse structured output
+                    TableStats stats =
+                            mapper.readValue(ai.text(), TableStats.class);
 
-                if (!toolUsed) {
-                    send(emitter, "error", "Model answered without using tools");
+                    if (!toolUsed) {
+                        send(emitter, "error", "Model produced structured output without using tools");
+                        return;
+                    }
+
+                    // Emit structured result
+                    send(emitter, "result", String.valueOf(stats));
+
+                    // Finish stream
+                    log.info("[SESSION={}] ✅ FINAL ANSWER reached", sessionId);
+                    send(emitter, "done", "completed");
+                    return;
+
+                } catch (Exception ignored) {
+                    // Not final JSON yet → continue agent loop
                 }
-
-                send(emitter, "done", "completed");
-                return;
             }
 
             var toolCalls = ai.toolExecutionRequests();
