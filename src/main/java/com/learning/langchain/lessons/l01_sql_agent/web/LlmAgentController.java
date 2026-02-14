@@ -1,6 +1,8 @@
 package com.learning.langchain.lessons.l01_sql_agent.web;
 
 import com.learning.langchain.lessons.l01_sql_agent.orchestrator.SqlAgentRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,22 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile("langchain4j")
 public class LlmAgentController {
 
-//    private final LlmSqlAgentService sqlAgentService;
-//
-//
-//    public LlmAgentController(LlmSqlAgentService sqlAgentService) {
-//        this.sqlAgentService = sqlAgentService;
-//    }
-//
-//    @GetMapping("/ask")
-//    public String ask(@RequestParam String question) {
-//        System.out.println("User Question: \n" + question + "\n");
-//        String response =  sqlAgentService.ask(question);
-//        System.out.println(response + "\n\n");
-//        return response;
-//    }
-
     private  final SqlAgentRunner agentRunner;
+
+    private static final Logger log =
+            LoggerFactory.getLogger(LlmAgentController.class);
 
 
     public LlmAgentController(SqlAgentRunner agentRunner) {
@@ -36,9 +26,9 @@ public class LlmAgentController {
 
     @GetMapping("/ask")
     public String ask(@RequestParam String question) {
-        System.out.println("User Question: \n" + question + "\n");
+        log.info("User Question: \n{}\n", question);
         String response =  agentRunner.run(question);
-        System.out.println(response + "\n\n");
+        log.info("{}\n\n", response);
         return response;
     }
 

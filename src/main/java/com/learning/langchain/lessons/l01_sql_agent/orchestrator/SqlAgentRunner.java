@@ -7,6 +7,8 @@ import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import dev.langchain4j.data.message.ToolExecutionResultMessage;
 import dev.langchain4j.agent.tool.ToolSpecification;
@@ -23,6 +25,10 @@ public class SqlAgentRunner {
 
     private final ChatModel model;
     private final SqlTool sqlTool;
+
+    private static final Logger log =
+            LoggerFactory.getLogger(SqlAgentRunner.class);
+
 
 
     public SqlAgentRunner(ChatModel model, SqlTool sqlTool) {
@@ -82,9 +88,9 @@ public class SqlAgentRunner {
 
 
         messages.add(UserMessage.from(question));
-        System.out.println(messages);
+        log.info(messages.toString());
         for (int step = 0; step < 8; step++) {
-            System.out.println("Step " + (step + 1) + ": ");
+            log.info("Step {}: ", step + 1);
 
             ChatRequest request = ChatRequest.builder()
                     .messages(messages)
@@ -92,7 +98,7 @@ public class SqlAgentRunner {
                     .build();
 
             var response = model.chat(request);
-            System.out.println(response.aiMessage());
+            log.info(String.valueOf(response.aiMessage()));
 
             AiMessage ai = response.aiMessage();
 
@@ -100,7 +106,7 @@ public class SqlAgentRunner {
             if (ai.text() != null
                     && ai.text().contains("FINAL ANSWER")
                     && messages.stream().anyMatch(m -> m instanceof ToolExecutionResultMessage)) {
-
+                log.info("Ai Text : {}", ai.text());
                 return ai.text();
             }
 
@@ -111,7 +117,7 @@ public class SqlAgentRunner {
             if (toolRequests != null && !toolRequests.isEmpty()) {
 
                 ToolExecutionRequest req = toolRequests.get(0);
-
+                log.info("Tool called : {}\t{}", req.name(), req.arguments());
                 Object toolResult = dispatch(req);
 
                 messages.add(ai);
@@ -125,6 +131,7 @@ public class SqlAgentRunner {
         }
 
             // fallback
+            log.info("Final Answer : \n{}", ai.text());
             return ai.text();
         }
 

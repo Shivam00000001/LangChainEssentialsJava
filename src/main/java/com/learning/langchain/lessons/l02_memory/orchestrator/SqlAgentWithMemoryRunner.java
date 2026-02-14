@@ -1,12 +1,14 @@
 package com.learning.langchain.lessons.l02_memory.orchestrator;
 
 import com.learning.langchain.lessons.l01_sql_agent.tool.SqlTool;
-import com.learning.langchain.lessons.l02_memory.memory.InMemoryConversationStore;
+import com.learning.langchain.shared.memory.ConversationMemoryStore;
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.data.message.*;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
@@ -19,12 +21,15 @@ public class SqlAgentWithMemoryRunner {
 
     private final ChatModel model;
     private final SqlTool sqlTool;
-    private final InMemoryConversationStore memoryStore;
+    private final ConversationMemoryStore memoryStore;
+
+    private static final Logger log =
+            LoggerFactory.getLogger(SqlAgentWithMemoryRunner.class);
 
     private final ObjectMapper mapper = new ObjectMapper();
 
 
-    public SqlAgentWithMemoryRunner(ChatModel model, SqlTool sqlTool, InMemoryConversationStore conversationStore) {
+    public SqlAgentWithMemoryRunner(ChatModel model, SqlTool sqlTool, ConversationMemoryStore conversationStore) {
         this.model = model;
         this.sqlTool = sqlTool;
         this.memoryStore = conversationStore;
@@ -73,9 +78,12 @@ public class SqlAgentWithMemoryRunner {
         }
 
         messages.add(UserMessage.from(question));
+        log.info("[Session={}], Starting agent stream. \n Question : {} \n", sessionId, question);
+        log.info("Memory store {}", memoryStore.get(sessionId));
 
         for (int step = 0; step < 8; step++) {
 
+            log.info("[SESSION={}] 🔁 Step {}", sessionId, step + 1);
             ChatRequest request = ChatRequest.builder()
                     .messages(messages)
                     .toolSpecifications(toolSpecs())
@@ -93,7 +101,7 @@ public class SqlAgentWithMemoryRunner {
             if (ai.text() != null
                     && ai.text().contains("FINAL ANSWER")
                     && messages.stream().anyMatch(m -> m instanceof ToolExecutionResultMessage)) {
-
+                log.info("[SESSION={}] ✅ FINAL ANSWER reached", sessionId);
                 return ai.text();
             }
 
@@ -103,6 +111,9 @@ public class SqlAgentWithMemoryRunner {
             if (toolRequests != null && !toolRequests.isEmpty()) {
 
                 ToolExecutionRequest req = toolRequests.get(0);
+
+                log.info("[SESSION={}] 🛠 Tool requested: {} | args={}",
+                        sessionId, req.name(), req.arguments());
 
                 Object result = dispatch(req);
 
@@ -115,7 +126,8 @@ public class SqlAgentWithMemoryRunner {
 
                 memoryStore.append(sessionId, toolMsg);
                 messages.add(toolMsg);
-
+                log.info("[SESSION={}] 📦 Tool result: {}",
+                        sessionId, result);
                 continue;
             }
 
@@ -140,15 +152,8 @@ public class SqlAgentWithMemoryRunner {
         return switch (req.name()) {
 
             case "listTables" -> sqlTool.listTables("x");
-
-            case "describeTable" -> sqlTool.describeTable(
-                    args.get("table").toString()
-            );
-
-            case "executeSql" -> sqlTool.executeSql(
-                    args.get("query").toString()
-            );
-
+            case "describeTable" -> sqlTool.describeTable(args.get("table").toString());
+            case "executeSql" -> sqlTool.executeSql(args.get("query").toString());
             default -> "Unknown tool: " + req.name();
         };
     }

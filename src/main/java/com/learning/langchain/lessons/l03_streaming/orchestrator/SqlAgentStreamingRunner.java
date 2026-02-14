@@ -2,6 +2,7 @@ package com.learning.langchain.lessons.l03_streaming.orchestrator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learning.langchain.lessons.l01_sql_agent.tool.SqlTool;
+import com.learning.langchain.shared.memory.ConversationMemoryStore;
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.data.message.*;
@@ -11,6 +12,9 @@ import dev.langchain4j.model.chat.request.json.JsonObjectSchema;
 import dev.langchain4j.model.chat.request.json.JsonStringSchema;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,11 +27,16 @@ public class SqlAgentStreamingRunner {
     private final ChatModel model;
     private final SqlTool sqlTool;
     private final ObjectMapper mapper = new ObjectMapper();
+    private final ConversationMemoryStore memoryStore;
+
+    private static final Logger log =
+            LoggerFactory.getLogger(SqlAgentStreamingRunner.class);
 
 
-    public SqlAgentStreamingRunner(ChatModel model, SqlTool sqlTool) {
+    public SqlAgentStreamingRunner(ChatModel model, SqlTool sqlTool, ConversationMemoryStore memoryStore) {
         this.model = model;
         this.sqlTool = sqlTool;
+        this.memoryStore = memoryStore;
     }
 
     private List<ToolSpecification> toolSpecs() {
@@ -56,9 +65,9 @@ public class SqlAgentStreamingRunner {
         );
     }
 
-    public void stream(String question, SseEmitter emitter) {
+    public void stream(String sessionId, String question, SseEmitter emitter) {
 
-        List<ChatMessage> messages = new ArrayList<>();
+        List<ChatMessage> messages = new ArrayList<>(memoryStore.get(sessionId));
         boolean toolUsed = false;
 
         messages.add(SystemMessage.from("""
@@ -69,10 +78,17 @@ public class SqlAgentStreamingRunner {
                     - Never guess or simulate
                     - END with a FINAl ANSWER
                 """));
-        messages.add(UserMessage.from(question));
+        UserMessage userMessage = UserMessage.from(question);
+        messages.add(userMessage);
+        memoryStore.append(sessionId, userMessage);
+
+        log.info("[Session={}], Starting agent stream. \n Question : {} \n", sessionId, question);
+        log.info("Memory store {}", memoryStore.get(sessionId));
+
 
         for (int step = 0; step < 8; step++) {
 
+            log.info("[SESSION={}] 🔁 Step {}", sessionId, step + 1);
             send(emitter, "step", "LLM step " + (step + 1));
 
             ChatRequest chatRequest = ChatRequest.builder()
@@ -84,12 +100,15 @@ public class SqlAgentStreamingRunner {
             AiMessage ai = response.aiMessage();
 
             messages.add(ai);
+            memoryStore.append(sessionId, ai);
 
             if (ai.text() != null) {
+                log.info("[SESSION={}] 🤖 LLM: {}", sessionId, ai.text());
                 send(emitter, "llm", ai.text());
             }
 
             if (ai.text() != null && ai.text().contains("FINAL ANSWER")) {
+                log.info("[SESSION={}] ✅ FINAL ANSWER reached", sessionId);
 
                 if (!toolUsed) {
                     send(emitter, "error", "Model answered without using tools");
@@ -102,9 +121,11 @@ public class SqlAgentStreamingRunner {
             var toolCalls = ai.toolExecutionRequests();
 
             if (toolCalls != null && !toolCalls.isEmpty()) {
-
                 ToolExecutionRequest toolExecutionRequest = toolCalls.get(0);
                 toolUsed = true;
+
+                log.info("[SESSION={}] 🛠 Tool requested: {} | args={}",
+                        sessionId, toolExecutionRequest.name(), toolExecutionRequest.arguments());
 
                 send(emitter, "tool-request", toolExecutionRequest.toString());
 
@@ -120,6 +141,9 @@ public class SqlAgentStreamingRunner {
                     );
 
                 messages.add(toolMessage);
+                memoryStore.append(sessionId, toolMessage);
+                log.info("[SESSION={}] 📦 Tool result: {}",
+                        sessionId, result);
                 continue;
             }
             return;

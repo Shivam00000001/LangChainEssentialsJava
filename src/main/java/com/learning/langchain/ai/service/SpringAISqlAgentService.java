@@ -1,5 +1,7 @@
 package com.learning.langchain.ai.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -10,12 +12,16 @@ public class SpringAISqlAgentService {
 
     private final ChatClient chatClient;
 
+    private static final Logger log =
+            LoggerFactory.getLogger(SpringAISqlAgentService.class);
+
 
     public SpringAISqlAgentService(ChatClient chatClient) {
         this.chatClient = chatClient;
     }
 
     public String ask (String question ) {
+        log.info("Ask called with question :\n{}", question);
         return chatClient.prompt()
                 .system("""
                     You are a careful SQLite analyst working on the Chinook music database.
