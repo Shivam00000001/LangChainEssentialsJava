@@ -3,9 +3,11 @@ package com.learning.langchain.ai.config;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
-public class AiConfig {
+@Profile("spring-ai")
+public class SpringAiConfig {
 
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder) {

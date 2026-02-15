@@ -1,0 +1,15 @@
+spring:
+  config:
+    active:
+      on-profile: langchain4j
+  logging:
+    level:
+      dev.langchain4j: DEBUG
+
+
+llm:
+  provider: ollama
+  base-url : http://localhost:11434
+  model: qwen2.5:7b-instruct
+  temperature: 0.0
+  timeout-seconds: 120
