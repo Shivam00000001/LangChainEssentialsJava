@@ -1,4 +1,4 @@
-package com.learning.langchain.lessons.l08_dynamic.policy;
+package com.learning.langchain.shared.policy;
 
 public record AgentPolicy(
         boolean allowSqlExecution,

@@ -1,7 +1,7 @@
 package com.learning.langchain.lessons.l08_dynamic.web;
 
 import com.learning.langchain.lessons.l08_dynamic.orchestrator.DynamicSqlAgentRunner;
-import com.learning.langchain.lessons.l08_dynamic.policy.AgentPolicy;
+import com.learning.langchain.shared.policy.AgentPolicy;
 import com.learning.langchain.shared.output.TableStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

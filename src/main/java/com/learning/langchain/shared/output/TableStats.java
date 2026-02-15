@@ -1,11 +1,12 @@
 package com.learning.langchain.shared.output;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 
 @Data
+@Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class TableStats {
 
     private String table;

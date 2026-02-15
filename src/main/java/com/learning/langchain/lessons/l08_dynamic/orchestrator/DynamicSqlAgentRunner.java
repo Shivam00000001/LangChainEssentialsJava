@@ -2,7 +2,7 @@ package com.learning.langchain.lessons.l08_dynamic.orchestrator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learning.langchain.lessons.l01_sql_agent.tool.SqlTool;
-import com.learning.langchain.lessons.l08_dynamic.policy.AgentPolicy;
+import com.learning.langchain.shared.policy.AgentPolicy;
 import com.learning.langchain.shared.output.TableStats;
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;
@@ -70,9 +70,12 @@ public class DynamicSqlAgentRunner {
 
         if(!policy.allowSqlExecution()) {
             return SystemMessage.from("""
-                    You are a database analyst.
-                    You may inspect schema but MUST NOT execute SQL queries.
-                    Never guess data.
+                    You are a SQL agent connected to a real Sqlite database.
+                    
+                    RULES:
+                    - Use tools when needed
+                    - Never guess or simulate
+                    - You MUST return the final answer
                     """);
         }
 
